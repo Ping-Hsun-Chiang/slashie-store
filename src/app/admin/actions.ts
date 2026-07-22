@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import {
   BatchStatus,
+  InquiryStatus,
   Section,
   VariantStatus,
   VariantType,
@@ -147,4 +148,23 @@ export async function deleteBatch(id: string) {
 
   revalidatePath("/admin/batches");
   revalidatePath("/preorder");
+}
+
+export async function updateInquiryStatus(id: string, status: InquiryStatus) {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("inquiries")
+    .update({ status })
+    .eq("id", id);
+  if (error) throw error;
+
+  revalidatePath("/admin/inquiries");
+}
+
+export async function deleteInquiry(id: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("inquiries").delete().eq("id", id);
+  if (error) throw error;
+
+  revalidatePath("/admin/inquiries");
 }

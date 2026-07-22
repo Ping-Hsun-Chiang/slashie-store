@@ -2,6 +2,13 @@ export type VariantType = "new_stock" | "used_stock" | "preorder";
 export type VariantStatus = "available" | "sold" | "hidden";
 export type Section = "preorder" | "in_stock" | "accessory";
 export type BatchStatus = "open" | "closed" | "arrived" | "completed";
+export type InquiryStatus =
+  | "new"
+  | "confirmed"
+  | "deposit_paid"
+  | "shipped"
+  | "completed"
+  | "cancelled";
 
 export interface PreorderBatch {
   id: string;
@@ -53,4 +60,25 @@ export const SECTION_PATH: Record<Section, string> = {
   preorder: "/preorder",
   in_stock: "/stock",
   accessory: "/accessories",
+};
+
+export interface Inquiry {
+  id: string;
+  product_id: string | null;
+  variant_id: string | null;
+  product_name: string;
+  variant_label: string | null;
+  price: number;
+  status: InquiryStatus;
+  note: string | null;
+  created_at: string;
+}
+
+export const INQUIRY_STATUS_LABEL: Record<InquiryStatus, string> = {
+  new: "新詢問",
+  confirmed: "已確認",
+  deposit_paid: "已付訂金",
+  shipped: "已出貨",
+  completed: "已完成",
+  cancelled: "已取消",
 };

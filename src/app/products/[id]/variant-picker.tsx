@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 import { VARIANT_TYPE_LABEL, Variant, VariantType } from "@/lib/types";
 
 const TYPE_ORDER: VariantType[] = ["new_stock", "used_stock", "preorder"];
@@ -11,10 +12,12 @@ function formatDate(date: string | null) {
 }
 
 export default function VariantPicker({
+  productId,
   productName,
   variants,
   lineUrl,
 }: {
+  productId: string;
   productName: string;
   variants: Variant[];
   lineUrl?: string;
@@ -41,6 +44,25 @@ export default function VariantPicker({
           }（${VARIANT_TYPE_LABEL[selected.variant_type]}）`,
         )}`
       : lineUrl;
+
+  function recordInquiry() {
+    if (!selected) return;
+    const supabase = createClient();
+    supabase
+      .from("inquiries")
+      .insert({
+        product_id: productId,
+        variant_id: selected.id,
+        product_name: productName,
+        variant_label: `${selected.size ?? "單一規格"} / ${
+          VARIANT_TYPE_LABEL[selected.variant_type]
+        }`,
+        price: selected.price,
+      })
+      .then(({ error }) => {
+        if (error) console.error("記錄詢問單失敗", error);
+      });
+  }
 
   return (
     <div className="flex flex-col gap-6 lg:flex-row">
@@ -158,6 +180,7 @@ export default function VariantPicker({
             href={inquiryHref}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={recordInquiry}
             className="mt-8 inline-flex h-12 items-center justify-center rounded-full bg-foreground px-8 text-base font-medium text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc]"
           >
             透過 LINE 詢問這個品項

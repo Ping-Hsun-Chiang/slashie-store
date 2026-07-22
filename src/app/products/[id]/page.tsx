@@ -41,6 +41,7 @@ export default async function ProductDetailPage({
         </p>
       )}
       <VariantPicker
+        productId={product.id}
         productName={product.name}
         variants={product.variants ?? []}
         lineUrl={process.env.NEXT_PUBLIC_LINE_URL}

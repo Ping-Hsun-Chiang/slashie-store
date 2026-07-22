@@ -56,7 +56,10 @@ export default function InquiryTable({
               key={inquiry.id}
               className="border-t border-black/[.08] dark:border-white/[.145]"
             >
-              <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">
+              <td
+                className="px-4 py-3 text-zinc-500 dark:text-zinc-400"
+                suppressHydrationWarning
+              >
                 {new Date(inquiry.created_at).toLocaleString("zh-TW")}
               </td>
               <td className="px-4 py-3">

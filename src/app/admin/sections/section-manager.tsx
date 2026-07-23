@@ -5,11 +5,13 @@ import { useRouter } from "next/navigation";
 import { Section } from "@/lib/types";
 import { deleteSection, saveSection, SectionInput } from "@/app/admin/actions";
 
+// 只取英數字轉成網址代號；名稱是純中文等無法轉換時留空，
+// 讓使用者自己填一個英文代號（欄位說明也是要求英文/數字/連字號）。
 function slugify(name: string) {
   return name
     .trim()
     .toLowerCase()
-    .replace(/[^a-z0-9一-鿿]+/g, "-")
+    .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { Fragment, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   Inquiry,
@@ -23,6 +23,10 @@ export default function InquiryTable({
   const [draftStatus, setDraftStatus] = useState<InquiryStatus>("new");
   const [draftTracking, setDraftTracking] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [fallbackMessage, setFallbackMessage] = useState<{
+    id: string;
+    text: string;
+  } | null>(null);
 
   function startEdit(inquiry: Inquiry) {
     setEditingId(inquiry.id);
@@ -53,9 +57,30 @@ export default function InquiryTable({
   async function handleCopyMessage(inquiry: Inquiry) {
     const message = buildCannedMessage(inquiry);
     if (!message) return;
-    await navigator.clipboard.writeText(message);
-    setCopiedId(inquiry.id);
-    setTimeout(() => setCopiedId((current) => (current === inquiry.id ? null : current)), 2000);
+
+    // navigator.clipboard 在某些情況下（權限被封鎖、不安全的 context…）
+    // 不會 reject，而是永遠不 resolve，所以額外加逾時保護避免按鈕卡死。
+    const timeout = new Promise<"timeout">((resolve) =>
+      setTimeout(() => resolve("timeout"), 1500),
+    );
+
+    try {
+      const result = await Promise.race([
+        navigator.clipboard.writeText(message).then(() => "ok" as const),
+        timeout,
+      ]);
+
+      if (result === "timeout") throw new Error("clipboard timed out");
+
+      setCopiedId(inquiry.id);
+      setTimeout(
+        () => setCopiedId((current) => (current === inquiry.id ? null : current)),
+        2000,
+      );
+    } catch {
+      // 剪貼簿寫入失敗或逾時，改成把文字顯示出來讓你手動選取複製
+      setFallbackMessage({ id: inquiry.id, text: message });
+    }
   }
 
   if (inquiries.length === 0) {
@@ -87,8 +112,8 @@ export default function InquiryTable({
             const canned = buildCannedMessage(inquiry);
 
             return (
+              <Fragment key={inquiry.id}>
               <tr
-                key={inquiry.id}
                 className="border-t border-black/[.08] align-top dark:border-white/[.145]"
               >
                 <td
@@ -191,6 +216,29 @@ export default function InquiryTable({
                   </>
                 )}
               </tr>
+              {fallbackMessage?.id === inquiry.id && (
+                <tr className="border-t border-black/[.08] dark:border-white/[.145]">
+                  <td colSpan={7} className="px-4 py-3">
+                    <p className="mb-2 text-xs text-zinc-500 dark:text-zinc-400">
+                      瀏覽器不支援自動複製，請手動選取以下文字：
+                    </p>
+                    <textarea
+                      readOnly
+                      value={fallbackMessage.text}
+                      rows={2}
+                      onFocus={(e) => e.target.select()}
+                      className="w-full rounded-lg border border-black/[.12] px-3 py-2 text-sm dark:border-white/[.2] dark:bg-zinc-900"
+                    />
+                    <button
+                      onClick={() => setFallbackMessage(null)}
+                      className="mt-2 text-sm text-zinc-500 hover:underline"
+                    >
+                      關閉
+                    </button>
+                  </td>
+                </tr>
+              )}
+              </Fragment>
             );
           })}
         </tbody>

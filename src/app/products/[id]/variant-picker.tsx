@@ -177,15 +177,20 @@ export default function VariantPicker({
         )}
 
         {selected && selected.status !== "sold" && inquiryHref && (
-          <a
-            href={inquiryHref}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={recordInquiry}
-            className="mt-8 inline-flex h-12 items-center justify-center rounded-full bg-foreground px-8 text-base font-medium text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc]"
-          >
-            透過 LINE 詢問這個品項
-          </a>
+          <div className="mt-8">
+            <a
+              href={inquiryHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={recordInquiry}
+              className="inline-flex h-12 items-center justify-center rounded-full bg-foreground px-8 text-base font-medium text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc]"
+            >
+              立即購買
+            </a>
+            <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">
+              點擊「立即購買」將導向官方 LINE，後續溝通、確認與匯款均在 LINE 內進行。
+            </p>
+          </div>
         )}
       </div>
     </div>

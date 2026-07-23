@@ -18,11 +18,21 @@ export interface VariantInput {
   size: string | null;
   condition_note: string | null;
   price: number;
+  cost_price: number | null;
   quantity: number;
   status: VariantStatus;
   batch_id: string | null;
   images: string[];
   sort_order: number;
+}
+
+export interface InventoryItemInput {
+  variant_type: VariantType;
+  size: string | null;
+  cost_price: number | null;
+  price: number;
+  quantity: number;
+  status: VariantStatus;
 }
 
 export interface BatchInput {
@@ -209,5 +219,46 @@ export async function deleteSection(id: string) {
   if (error) throw error;
 
   revalidatePath("/admin/sections");
+  revalidateStorefront();
+}
+
+export async function createInventoryItem(
+  productId: string,
+  item: InventoryItemInput,
+) {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("variants")
+    .insert({ ...item, product_id: productId, batch_id: null, images: [] });
+  if (error) throw error;
+
+  revalidatePath("/admin/inventory");
+  revalidatePath("/admin/products");
+  revalidateStorefront();
+}
+
+export async function updateInventoryItem(
+  variantId: string,
+  item: InventoryItemInput,
+) {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("variants")
+    .update(item)
+    .eq("id", variantId);
+  if (error) throw error;
+
+  revalidatePath("/admin/inventory");
+  revalidatePath("/admin/products");
+  revalidateStorefront();
+}
+
+export async function deleteInventoryItem(variantId: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("variants").delete().eq("id", variantId);
+  if (error) throw error;
+
+  revalidatePath("/admin/inventory");
+  revalidatePath("/admin/products");
   revalidateStorefront();
 }

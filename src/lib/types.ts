@@ -24,12 +24,23 @@ export interface Variant {
   size: string | null;
   condition_note: string | null;
   price: number;
+  cost_price: number | null;
   quantity: number;
   status: VariantStatus;
   batch_id: string | null;
   images: string[];
   sort_order: number;
   preorder_batches?: PreorderBatch | null;
+}
+
+export interface InventoryVariant extends Variant {
+  products: { id: string; name: string; brand: string | null };
+}
+
+export interface ProductOption {
+  id: string;
+  name: string;
+  brand: string | null;
 }
 
 export interface Section {

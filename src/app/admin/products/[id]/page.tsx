@@ -40,6 +40,7 @@ export default async function EditProductPage({
             size: v.size,
             condition_note: v.condition_note,
             price: v.price,
+            cost_price: v.cost_price,
             quantity: v.quantity,
             status: v.status,
             batch_id: v.batch_id,

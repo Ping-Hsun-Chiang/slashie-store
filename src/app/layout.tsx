@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
+import { getActiveSections, isSupabaseConfigured } from "@/lib/queries";
+import { Section } from "@/lib/types";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -18,13 +20,22 @@ export const metadata: Metadata = {
   description: "鞋槓青年 — 預購代購、現貨球鞋（全新／二手）、配件",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   const igUrl = process.env.NEXT_PUBLIC_INSTAGRAM_URL;
   const lineUrl = process.env.NEXT_PUBLIC_LINE_URL;
+
+  let sections: Section[] = [];
+  if (isSupabaseConfigured()) {
+    try {
+      sections = await getActiveSections();
+    } catch {
+      sections = [];
+    }
+  }
 
   return (
     <html
@@ -38,24 +49,15 @@ export default function RootLayout({
               鞋槓青年
             </Link>
             <nav className="flex items-center gap-5 text-sm">
-              <Link
-                href="/preorder"
-                className="text-zinc-600 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-50"
-              >
-                預購代購
-              </Link>
-              <Link
-                href="/stock"
-                className="text-zinc-600 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-50"
-              >
-                現貨
-              </Link>
-              <Link
-                href="/accessories"
-                className="text-zinc-600 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-50"
-              >
-                配件
-              </Link>
+              {sections.map((section) => (
+                <Link
+                  key={section.id}
+                  href={`/${section.slug}`}
+                  className="text-zinc-600 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-50"
+                >
+                  {section.name}
+                </Link>
+              ))}
               {igUrl && (
                 <a
                   href={igUrl}

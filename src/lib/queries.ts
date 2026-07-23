@@ -8,15 +8,54 @@ export function isSupabaseConfigured() {
   );
 }
 
-export async function getProductsBySection(
-  section: Section,
+export async function getActiveSections(): Promise<Section[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("sections")
+    .select("*")
+    .eq("is_active", true)
+    .order("sort_order", { ascending: true });
+
+  if (error) throw error;
+  return (data ?? []) as Section[];
+}
+
+export async function getAllSectionsForAdmin(): Promise<Section[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("sections")
+    .select("*")
+    .order("sort_order", { ascending: true });
+
+  if (error) throw error;
+  return (data ?? []) as Section[];
+}
+
+export async function getSectionBySlug(slug: string): Promise<Section | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("sections")
+    .select("*")
+    .eq("slug", slug)
+    .eq("is_active", true)
+    .single();
+
+  if (error) return null;
+  return data as Section;
+}
+
+export async function getProductsBySectionSlug(
+  slug: string,
 ): Promise<Product[]> {
+  const section = await getSectionBySlug(slug);
+  if (!section) return [];
+
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("products")
-    .select("*, variants(*)")
+    .select("*, variants(*), product_sections!inner(section_id)")
     .eq("is_active", true)
-    .eq("section", section)
+    .eq("product_sections.section_id", section.id)
     .order("created_at", { ascending: false });
 
   if (error) throw error;
@@ -27,7 +66,7 @@ export async function getAllProductsForAdmin(): Promise<Product[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("products")
-    .select("*, variants(*)")
+    .select("*, variants(*), product_sections(sections(*))")
     .order("created_at", { ascending: false });
 
   if (error) throw error;
@@ -38,7 +77,7 @@ export async function getProductForAdmin(id: string): Promise<Product | null> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("products")
-    .select("*, variants(*)")
+    .select("*, variants(*), product_sections(sections(*))")
     .eq("id", id)
     .single();
 

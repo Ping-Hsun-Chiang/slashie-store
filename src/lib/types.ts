@@ -1,6 +1,5 @@
 export type VariantType = "new_stock" | "used_stock" | "preorder";
 export type VariantStatus = "available" | "sold" | "hidden";
-export type Section = "preorder" | "in_stock" | "accessory";
 export type BatchStatus = "open" | "closed" | "arrived" | "completed";
 export type InquiryStatus =
   | "new"
@@ -33,33 +32,29 @@ export interface Variant {
   preorder_batches?: PreorderBatch | null;
 }
 
+export interface Section {
+  id: string;
+  slug: string;
+  name: string;
+  sort_order: number;
+  is_active: boolean;
+}
+
 export interface Product {
   id: string;
   name: string;
   brand: string | null;
-  section: Section;
   cover_image_url: string | null;
   description: string | null;
   is_active: boolean;
   variants?: Variant[];
+  product_sections?: { sections: Section }[];
 }
 
 export const VARIANT_TYPE_LABEL: Record<VariantType, string> = {
   new_stock: "現貨新品",
   used_stock: "現貨二手",
   preorder: "預購代購",
-};
-
-export const SECTION_LABEL: Record<Section, string> = {
-  preorder: "預購代購",
-  in_stock: "現貨",
-  accessory: "配件",
-};
-
-export const SECTION_PATH: Record<Section, string> = {
-  preorder: "/preorder",
-  in_stock: "/stock",
-  accessory: "/accessories",
 };
 
 export interface Inquiry {

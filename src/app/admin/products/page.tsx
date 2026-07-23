@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { getAllProductsForAdmin } from "@/lib/queries";
-import { SECTION_LABEL } from "@/lib/types";
 import DeleteProductButton from "./delete-product-button";
 
 export default async function AdminProductsPage() {
@@ -46,7 +45,11 @@ export default async function AdminProductsPage() {
                       </p>
                     )}
                   </td>
-                  <td className="px-4 py-3">{SECTION_LABEL[product.section]}</td>
+                  <td className="px-4 py-3">
+                    {(product.product_sections ?? [])
+                      .map((ps) => ps.sections.name)
+                      .join("、") || "—"}
+                  </td>
                   <td className="px-4 py-3">{product.variants?.length ?? 0}</td>
                   <td className="px-4 py-3">
                     {product.is_active ? (

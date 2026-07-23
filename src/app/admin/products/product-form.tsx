@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import {
   PreorderBatch,
   Section,
-  SECTION_LABEL,
   VARIANT_TYPE_LABEL,
   VariantStatus,
   VariantType,
@@ -13,7 +12,6 @@ import {
 import { saveProduct, ProductInput, VariantInput } from "@/app/admin/actions";
 import { uploadProductImage } from "@/lib/supabase/storage";
 
-const SECTIONS: Section[] = ["preorder", "in_stock", "accessory"];
 const VARIANT_TYPES: VariantType[] = ["new_stock", "used_stock", "preorder"];
 const VARIANT_STATUSES: VariantStatus[] = ["available", "sold", "hidden"];
 
@@ -35,12 +33,16 @@ export default function ProductForm({
   productId,
   initialProduct,
   initialVariants,
+  initialSectionIds,
   batches,
+  sections,
 }: {
   productId: string | null;
   initialProduct: ProductInput;
   initialVariants: VariantInput[];
+  initialSectionIds: string[];
   batches: PreorderBatch[];
+  sections: Section[];
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -50,6 +52,7 @@ export default function ProductForm({
   const [variants, setVariants] = useState<VariantInput[]>(
     initialVariants.length > 0 ? initialVariants : [emptyVariant()],
   );
+  const [sectionIds, setSectionIds] = useState<string[]>(initialSectionIds);
   const [uploadingCover, setUploadingCover] = useState(false);
   const [uploadingVariantIdx, setUploadingVariantIdx] = useState<number | null>(
     null,
@@ -105,6 +108,14 @@ export default function ProductForm({
     });
   }
 
+  function toggleSection(sectionId: string) {
+    setSectionIds((prev) =>
+      prev.includes(sectionId)
+        ? prev.filter((id) => id !== sectionId)
+        : [...prev, sectionId],
+    );
+  }
+
   function handleSubmit() {
     setError(null);
 
@@ -121,7 +132,7 @@ export default function ProductForm({
 
     startTransition(async () => {
       try {
-        const id = await saveProduct(productId, product, variants);
+        const id = await saveProduct(productId, product, variants, sectionIds);
         router.replace(`/admin/products/${id}`);
         router.refresh();
       } catch {
@@ -161,22 +172,28 @@ export default function ProductForm({
           />
         </label>
 
-        <label className="flex flex-col gap-1 text-sm">
-          分類
-          <select
-            value={product.section}
-            onChange={(e) =>
-              setProduct({ ...product, section: e.target.value as Section })
-            }
-            className="rounded-lg border border-black/[.12] px-3 py-2 dark:border-white/[.2] dark:bg-zinc-900"
-          >
-            {SECTIONS.map((s) => (
-              <option key={s} value={s}>
-                {SECTION_LABEL[s]}
-              </option>
+        <div className="flex flex-col gap-2 text-sm">
+          分類（可複選）
+          <div className="flex flex-wrap gap-2">
+            {sections.map((s) => (
+              <label
+                key={s.id}
+                className={`flex items-center gap-2 rounded-lg border px-3 py-2 ${
+                  sectionIds.includes(s.id)
+                    ? "border-foreground"
+                    : "border-black/[.12] dark:border-white/[.2]"
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={sectionIds.includes(s.id)}
+                  onChange={() => toggleSection(s.id)}
+                />
+                {s.name}
+              </label>
             ))}
-          </select>
-        </label>
+          </div>
+        </div>
 
         <label className="flex flex-col gap-1 text-sm">
           描述

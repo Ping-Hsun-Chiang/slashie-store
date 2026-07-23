@@ -1,5 +1,9 @@
 import { notFound } from "next/navigation";
-import { getAllBatches, getProductForAdmin } from "@/lib/queries";
+import {
+  getAllBatches,
+  getAllSectionsForAdmin,
+  getProductForAdmin,
+} from "@/lib/queries";
 import ProductForm from "../product-form";
 
 export default async function EditProductPage({
@@ -8,9 +12,10 @@ export default async function EditProductPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [product, batches] = await Promise.all([
+  const [product, batches, sections] = await Promise.all([
     getProductForAdmin(id),
     getAllBatches(),
+    getAllSectionsForAdmin(),
   ]);
 
   if (!product) notFound();
@@ -23,7 +28,6 @@ export default async function EditProductPage({
         initialProduct={{
           name: product.name,
           brand: product.brand,
-          section: product.section,
           cover_image_url: product.cover_image_url,
           description: product.description,
           is_active: product.is_active,
@@ -42,7 +46,11 @@ export default async function EditProductPage({
             images: v.images,
             sort_order: v.sort_order,
           }))}
+        initialSectionIds={(product.product_sections ?? []).map(
+          (ps) => ps.sections.id,
+        )}
         batches={batches}
+        sections={sections}
       />
     </div>
   );

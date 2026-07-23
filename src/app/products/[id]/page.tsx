@@ -1,14 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { Product, SECTION_LABEL, SECTION_PATH } from "@/lib/types";
+import { Product } from "@/lib/types";
 import VariantPicker from "./variant-picker";
 
 async function getProduct(id: string): Promise<Product | null> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("products")
-    .select("*, variants(*, preorder_batches(*))")
+    .select("*, variants(*, preorder_batches(*)), product_sections(sections(*))")
     .eq("id", id)
     .eq("is_active", true)
     .single();
@@ -27,14 +27,23 @@ export default async function ProductDetailPage({
 
   if (!product) notFound();
 
+  const sections = (product.product_sections ?? []).map((ps) => ps.sections);
+
   return (
     <div className="mx-auto w-full max-w-5xl px-6 py-10">
-      <Link
-        href={SECTION_PATH[product.section]}
-        className="mb-2 inline-block text-sm text-zinc-500 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-50"
-      >
-        ← {SECTION_LABEL[product.section]}
-      </Link>
+      {sections.length > 0 && (
+        <div className="mb-2 flex flex-wrap gap-2">
+          {sections.map((section) => (
+            <Link
+              key={section.id}
+              href={`/${section.slug}`}
+              className="text-sm text-zinc-500 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-50"
+            >
+              ← {section.name}
+            </Link>
+          ))}
+        </div>
+      )}
       {product.brand && (
         <p className="mb-2 text-sm text-zinc-500 dark:text-zinc-400">
           {product.brand}

@@ -2,18 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import {
-  BatchStatus,
-  InquiryStatus,
-  Section,
-  VariantStatus,
-  VariantType,
-} from "@/lib/types";
+import { BatchStatus, InquiryStatus, VariantStatus, VariantType } from "@/lib/types";
 
 export interface ProductInput {
   name: string;
   brand: string | null;
-  section: Section;
   cover_image_url: string | null;
   description: string | null;
   is_active: boolean;
@@ -39,16 +32,23 @@ export interface BatchInput {
   status: BatchStatus;
 }
 
+export interface SectionInput {
+  slug: string;
+  name: string;
+  sort_order: number;
+  is_active: boolean;
+}
+
 function revalidateStorefront() {
-  revalidatePath("/stock");
-  revalidatePath("/preorder");
-  revalidatePath("/accessories");
+  revalidatePath("/");
+  revalidatePath("/[slug]", "page");
 }
 
 export async function saveProduct(
   productId: string | null,
   product: ProductInput,
   variants: VariantInput[],
+  sectionIds: string[],
 ) {
   const supabase = await createClient();
 
@@ -104,6 +104,19 @@ export async function saveProduct(
     }
   }
 
+  const { error: clearSectionsError } = await supabase
+    .from("product_sections")
+    .delete()
+    .eq("product_id", id);
+  if (clearSectionsError) throw clearSectionsError;
+
+  if (sectionIds.length > 0) {
+    const { error: sectionsError } = await supabase
+      .from("product_sections")
+      .insert(sectionIds.map((sectionId) => ({ product_id: id, section_id: sectionId })));
+    if (sectionsError) throw sectionsError;
+  }
+
   revalidatePath("/admin/products");
   revalidatePath(`/products/${id}`);
   revalidateStorefront();
@@ -135,7 +148,7 @@ export async function saveBatch(batchId: string | null, batch: BatchInput) {
   }
 
   revalidatePath("/admin/batches");
-  revalidatePath("/preorder");
+  revalidateStorefront();
 }
 
 export async function deleteBatch(id: string) {
@@ -147,7 +160,7 @@ export async function deleteBatch(id: string) {
   if (error) throw error;
 
   revalidatePath("/admin/batches");
-  revalidatePath("/preorder");
+  revalidateStorefront();
 }
 
 export async function updateInquiryStatus(id: string, status: InquiryStatus) {
@@ -167,4 +180,34 @@ export async function deleteInquiry(id: string) {
   if (error) throw error;
 
   revalidatePath("/admin/inquiries");
+}
+
+export async function saveSection(
+  sectionId: string | null,
+  section: SectionInput,
+) {
+  const supabase = await createClient();
+
+  if (sectionId) {
+    const { error } = await supabase
+      .from("sections")
+      .update(section)
+      .eq("id", sectionId);
+    if (error) throw error;
+  } else {
+    const { error } = await supabase.from("sections").insert(section);
+    if (error) throw error;
+  }
+
+  revalidatePath("/admin/sections");
+  revalidateStorefront();
+}
+
+export async function deleteSection(id: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("sections").delete().eq("id", id);
+  if (error) throw error;
+
+  revalidatePath("/admin/sections");
+  revalidateStorefront();
 }

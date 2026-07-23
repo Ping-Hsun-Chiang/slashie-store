@@ -58,6 +58,7 @@ export default function VariantPicker({
           VARIANT_TYPE_LABEL[selected.variant_type]
         }`,
         price: selected.price,
+        order_type: selected.variant_type === "preorder" ? "preorder" : "stock",
       })
       .then(({ error }) => {
         if (error) console.error("記錄詢問單失敗", error);

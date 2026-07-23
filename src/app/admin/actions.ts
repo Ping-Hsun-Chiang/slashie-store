@@ -173,11 +173,15 @@ export async function deleteBatch(id: string) {
   revalidateStorefront();
 }
 
-export async function updateInquiryStatus(id: string, status: InquiryStatus) {
+export async function updateInquiryStatus(
+  id: string,
+  status: InquiryStatus,
+  trackingNumber: string | null,
+) {
   const supabase = await createClient();
   const { error } = await supabase
     .from("inquiries")
-    .update({ status })
+    .update({ status, tracking_number: trackingNumber })
     .eq("id", id);
   if (error) throw error;
 

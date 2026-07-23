@@ -63,7 +63,8 @@ export async function getProductsBySectionSlug(
     .select("*, variants(*), product_sections!inner(section_id)")
     .eq("is_active", true)
     .eq("product_sections.section_id", section.id)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: true });
 
   if (error) throw error;
   return (data ?? []) as Product[];
@@ -74,7 +75,8 @@ export async function getAllProductsForAdmin(): Promise<Product[]> {
   const { data, error } = await supabase
     .from("products")
     .select("*, variants(*), product_sections(sections(*))")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: true });
 
   if (error) throw error;
   return (data ?? []) as Product[];
@@ -97,7 +99,8 @@ export async function getAllBatches(): Promise<PreorderBatch[]> {
   const { data, error } = await supabase
     .from("preorder_batches")
     .select("*")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: true });
 
   if (error) throw error;
   return (data ?? []) as PreorderBatch[];
@@ -108,7 +111,8 @@ export async function getAllInquiries(): Promise<Inquiry[]> {
   const { data, error } = await supabase
     .from("inquiries")
     .select("*")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: true });
 
   if (error) throw error;
   return (data ?? []) as Inquiry[];
@@ -120,7 +124,8 @@ export async function getInventoryVariants(): Promise<InventoryVariant[]> {
     .from("variants")
     .select("*, products!inner(id, name, brand)")
     .in("variant_type", ["new_stock", "used_stock"])
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: true });
 
   if (error) throw error;
   return (data ?? []) as InventoryVariant[];

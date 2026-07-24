@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Noto_Serif_TC } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
+import HamburgerMenu from "@/components/hamburger-menu";
 import { getActiveSections, isSupabaseConfigured } from "@/lib/queries";
 import { Section } from "@/lib/types";
 import "./globals.css";
@@ -74,37 +75,7 @@ export default async function RootLayout({
                 鞋槓青年
               </span>
             </Link>
-            <nav className="flex items-center gap-5 text-sm">
-              {sections.map((section) => (
-                <Link
-                  key={section.id}
-                  href={`/${section.slug}`}
-                  className="text-brand-foreground/70 hover:text-brand-foreground"
-                >
-                  {section.name}
-                </Link>
-              ))}
-              {igUrl && (
-                <a
-                  href={igUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-brand-foreground/70 hover:text-brand-foreground"
-                >
-                  Instagram
-                </a>
-              )}
-              {lineUrl && (
-                <a
-                  href={lineUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="rounded-full bg-brand-foreground px-4 py-1.5 text-brand transition-opacity hover:opacity-90"
-                >
-                  加入 LINE
-                </a>
-              )}
-            </nav>
+            <HamburgerMenu sections={sections} igUrl={igUrl} lineUrl={lineUrl} />
           </div>
         </header>
 

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Section } from "@/lib/types";
 
 export default function HamburgerMenu({
@@ -13,11 +14,15 @@ export default function HamburgerMenu({
   igUrl?: string;
   lineUrl?: string;
 }) {
+  const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
   function close() {
     setOpen(false);
   }
+
+  // 後台（含登入頁）用自己的導覽列，不需要前台這個漢堡選單
+  if (pathname.startsWith("/admin")) return null;
 
   return (
     <div className="relative">

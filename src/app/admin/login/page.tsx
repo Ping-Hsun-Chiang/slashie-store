@@ -35,7 +35,7 @@ export default function LoginPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center px-6 py-24">
-      <h1 className="mb-6 text-xl font-semibold">後台登入</h1>
+      <h1 className="mb-6 text-xl font-semibold">鞋槓青年 後台登入</h1>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input
           type="email"

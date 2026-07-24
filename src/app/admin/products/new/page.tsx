@@ -1,11 +1,8 @@
-import { getAllBatches, getAllSectionsForAdmin } from "@/lib/queries";
+import { getAllSectionsForAdmin } from "@/lib/queries";
 import ProductForm from "../product-form";
 
 export default async function NewProductPage() {
-  const [batches, sections] = await Promise.all([
-    getAllBatches(),
-    getAllSectionsForAdmin(),
-  ]);
+  const sections = await getAllSectionsForAdmin();
 
   return (
     <div className="mx-auto w-full max-w-3xl px-6 py-10">
@@ -21,7 +18,6 @@ export default async function NewProductPage() {
         }}
         initialVariants={[]}
         initialSectionIds={[]}
-        batches={batches}
         sections={sections}
       />
     </div>

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { BatchStatus, VariantStatus, VariantType } from "@/lib/types";
+import { VariantStatus, VariantType } from "@/lib/types";
 
 export interface ProductInput {
   name: string;
@@ -21,7 +21,6 @@ export interface VariantInput {
   cost_price: number | null;
   quantity: number;
   status: VariantStatus;
-  batch_id: string | null;
   images: string[];
   sort_order: number;
 }
@@ -33,13 +32,6 @@ export interface InventoryItemInput {
   price: number;
   quantity: number;
   status: VariantStatus;
-}
-
-export interface BatchInput {
-  batch_name: string;
-  order_deadline: string | null;
-  expected_arrival: string | null;
-  status: BatchStatus;
 }
 
 export interface SectionInput {
@@ -143,36 +135,6 @@ export async function deleteProduct(id: string) {
   revalidateStorefront();
 }
 
-export async function saveBatch(batchId: string | null, batch: BatchInput) {
-  const supabase = await createClient();
-
-  if (batchId) {
-    const { error } = await supabase
-      .from("preorder_batches")
-      .update(batch)
-      .eq("id", batchId);
-    if (error) throw error;
-  } else {
-    const { error } = await supabase.from("preorder_batches").insert(batch);
-    if (error) throw error;
-  }
-
-  revalidatePath("/admin/batches");
-  revalidateStorefront();
-}
-
-export async function deleteBatch(id: string) {
-  const supabase = await createClient();
-  const { error } = await supabase
-    .from("preorder_batches")
-    .delete()
-    .eq("id", id);
-  if (error) throw error;
-
-  revalidatePath("/admin/batches");
-  revalidateStorefront();
-}
-
 export async function saveSection(
   sectionId: string | null,
   section: SectionInput,
@@ -210,7 +172,7 @@ export async function createInventoryItem(
   const supabase = await createClient();
   const { error } = await supabase
     .from("variants")
-    .insert({ ...item, product_id: productId, batch_id: null, images: [] });
+    .insert({ ...item, product_id: productId, images: [] });
   if (error) throw error;
 
   revalidatePath("/admin/inventory");

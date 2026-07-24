@@ -3,7 +3,6 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
-  PreorderBatch,
   Section,
   VARIANT_TYPE_LABEL,
   VariantStatus,
@@ -24,7 +23,6 @@ function emptyVariant(): VariantInput {
     cost_price: null,
     quantity: 1,
     status: "available",
-    batch_id: null,
     images: [],
     sort_order: 0,
   };
@@ -35,14 +33,12 @@ export default function ProductForm({
   initialProduct,
   initialVariants,
   initialSectionIds,
-  batches,
   sections,
 }: {
   productId: string | null;
   initialProduct: ProductInput;
   initialVariants: VariantInput[];
   initialSectionIds: string[];
-  batches: PreorderBatch[];
   sections: Section[];
 }) {
   const router = useRouter();
@@ -69,7 +65,6 @@ export default function ProductForm({
     updateVariant(index, {
       variant_type: type,
       quantity: type === "new_stock" ? variants[index].quantity || 1 : 1,
-      batch_id: type === "preorder" ? variants[index].batch_id : null,
     });
   }
 
@@ -123,12 +118,6 @@ export default function ProductForm({
     if (!product.name.trim()) {
       setError("請輸入型號名稱");
       return;
-    }
-    for (const v of variants) {
-      if (v.variant_type === "preorder" && !v.batch_id) {
-        setError("預購規格必須選擇批次（請先到「預購批次」建立一筆）");
-        return;
-      }
     }
 
     startTransition(async () => {
@@ -364,26 +353,6 @@ export default function ProductForm({
                   className="rounded-lg border border-black/[.12] px-3 py-2 disabled:opacity-50 dark:border-white/[.2] dark:bg-zinc-900"
                 />
               </label>
-
-              {variant.variant_type === "preorder" && (
-                <label className="flex flex-col gap-1 text-sm">
-                  預購批次
-                  <select
-                    value={variant.batch_id ?? ""}
-                    onChange={(e) =>
-                      updateVariant(index, { batch_id: e.target.value || null })
-                    }
-                    className="rounded-lg border border-black/[.12] px-3 py-2 dark:border-white/[.2] dark:bg-zinc-900"
-                  >
-                    <option value="">請選擇</option>
-                    {batches.map((b) => (
-                      <option key={b.id} value={b.id}>
-                        {b.batch_name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              )}
             </div>
 
             {variant.variant_type === "used_stock" && (

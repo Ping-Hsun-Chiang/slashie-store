@@ -8,7 +8,7 @@ async function getProduct(id: string): Promise<Product | null> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("products")
-    .select("*, variants(*, preorder_batches(*)), product_sections(sections(*))")
+    .select("*, variants(*), product_sections(sections(*))")
     .eq("id", id)
     .eq("is_active", true)
     .single();

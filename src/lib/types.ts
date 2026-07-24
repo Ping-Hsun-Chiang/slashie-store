@@ -1,14 +1,5 @@
 export type VariantType = "new_stock" | "used_stock" | "preorder";
 export type VariantStatus = "available" | "sold" | "hidden";
-export type BatchStatus = "open" | "closed" | "arrived" | "completed";
-
-export interface PreorderBatch {
-  id: string;
-  batch_name: string;
-  order_deadline: string | null;
-  expected_arrival: string | null;
-  status: BatchStatus;
-}
 
 export interface Variant {
   id: string;
@@ -20,10 +11,8 @@ export interface Variant {
   cost_price: number | null;
   quantity: number;
   status: VariantStatus;
-  batch_id: string | null;
   images: string[];
   sort_order: number;
-  preorder_batches?: PreorderBatch | null;
 }
 
 export interface InventoryVariant extends Variant {

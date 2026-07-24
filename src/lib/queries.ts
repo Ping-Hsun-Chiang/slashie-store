@@ -1,11 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import {
-  InventoryVariant,
-  PreorderBatch,
-  Product,
-  ProductOption,
-  Section,
-} from "@/lib/types";
+import { InventoryVariant, Product, ProductOption, Section } from "@/lib/types";
 
 export function isSupabaseConfigured() {
   return Boolean(
@@ -91,18 +85,6 @@ export async function getProductForAdmin(id: string): Promise<Product | null> {
 
   if (error) return null;
   return data as Product;
-}
-
-export async function getAllBatches(): Promise<PreorderBatch[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("preorder_batches")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .order("id", { ascending: true });
-
-  if (error) throw error;
-  return (data ?? []) as PreorderBatch[];
 }
 
 export async function getInventoryVariants(): Promise<InventoryVariant[]> {

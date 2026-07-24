@@ -60,14 +60,42 @@ export default async function Home() {
         </div>
       </div>
 
-      <div className="grid w-full grid-cols-1 gap-6 sm:grid-cols-3">
-        {sections.map((section) => (
+      <div className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {sections.map((section, index) => (
           <Link
             key={section.id}
             href={`/${section.slug}`}
-            className="group rounded-2xl border border-black/[.08] bg-white p-8 text-center transition-shadow hover:shadow-md dark:border-white/[.145] dark:bg-zinc-950"
+            className="group relative overflow-hidden rounded-2xl border border-black/[.08] bg-white p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-white/[.145] dark:bg-zinc-950"
           >
-            <h2 className="font-serif text-xl font-medium">{section.name}</h2>
+            <span
+              aria-hidden
+              className="pointer-events-none absolute -top-3 right-3 font-serif text-7xl font-bold text-black/[0.04] transition-colors duration-300 group-hover:text-brand/10 dark:text-white/[0.06] dark:group-hover:text-white/10"
+            >
+              {String(index + 1).padStart(2, "0")}
+            </span>
+            <div className="relative">
+              <h2 className="font-serif text-xl font-medium">
+                {section.name}
+              </h2>
+              <div className="mt-3 h-px w-8 bg-brand transition-all duration-300 group-hover:w-14 dark:bg-white/40" />
+              <span className="mt-4 inline-flex items-center gap-1.5 text-sm text-zinc-500 transition-colors duration-300 group-hover:text-brand dark:text-zinc-400 dark:group-hover:text-white">
+                查看商品
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="transition-transform duration-300 group-hover:translate-x-1"
+                >
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                  <polyline points="12 5 19 12 12 19" />
+                </svg>
+              </span>
+            </div>
           </Link>
         ))}
       </div>

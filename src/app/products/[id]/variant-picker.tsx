@@ -5,11 +5,6 @@ import { VARIANT_TYPE_LABEL, Variant, VariantType } from "@/lib/types";
 
 const TYPE_ORDER: VariantType[] = ["new_stock", "used_stock", "preorder"];
 
-function formatDate(date: string | null) {
-  if (!date) return null;
-  return new Date(date).toLocaleDateString("zh-TW");
-}
-
 export default function VariantPicker({
   productName,
   variants,
@@ -114,42 +109,14 @@ export default function VariantPicker({
           ))}
         </div>
 
-        {selected && (
+        {selected && selected.condition_note && (
           <div className="mt-6 space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
-            {selected.condition_note && (
-              <p>
-                <span className="font-medium text-zinc-800 dark:text-zinc-200">
-                  使用狀況：
-                </span>
-                {selected.condition_note}
-              </p>
-            )}
-            {selected.preorder_batches && (
-              <>
-                <p>
-                  <span className="font-medium text-zinc-800 dark:text-zinc-200">
-                    批次：
-                  </span>
-                  {selected.preorder_batches.batch_name}
-                </p>
-                {selected.preorder_batches.order_deadline && (
-                  <p>
-                    <span className="font-medium text-zinc-800 dark:text-zinc-200">
-                      截單日：
-                    </span>
-                    {formatDate(selected.preorder_batches.order_deadline)}
-                  </p>
-                )}
-                {selected.preorder_batches.expected_arrival && (
-                  <p>
-                    <span className="font-medium text-zinc-800 dark:text-zinc-200">
-                      預計到貨：
-                    </span>
-                    {formatDate(selected.preorder_batches.expected_arrival)}
-                  </p>
-                )}
-              </>
-            )}
+            <p>
+              <span className="font-medium text-zinc-800 dark:text-zinc-200">
+                使用狀況：
+              </span>
+              {selected.condition_note}
+            </p>
           </div>
         )}
 

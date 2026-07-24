@@ -25,16 +25,16 @@ export default async function AdminLayout({
               後台
             </Link>
             <Link
-              href="/admin/products"
-              className="text-zinc-600 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-50"
-            >
-              商品管理
-            </Link>
-            <Link
               href="/admin/sections"
               className="text-zinc-600 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-50"
             >
               分類管理
+            </Link>
+            <Link
+              href="/admin/products"
+              className="text-zinc-600 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-50"
+            >
+              商品管理
             </Link>
             <Link
               href="/admin/inventory"
@@ -47,12 +47,6 @@ export default async function AdminLayout({
               className="text-zinc-600 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-50"
             >
               預購批次
-            </Link>
-            <Link
-              href="/admin/inquiries"
-              className="text-zinc-600 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-50"
-            >
-              詢問單
             </Link>
           </nav>
           <LogoutButton />

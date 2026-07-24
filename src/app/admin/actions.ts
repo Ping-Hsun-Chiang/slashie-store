@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { BatchStatus, InquiryStatus, VariantStatus, VariantType } from "@/lib/types";
+import { BatchStatus, VariantStatus, VariantType } from "@/lib/types";
 
 export interface ProductInput {
   name: string;
@@ -171,29 +171,6 @@ export async function deleteBatch(id: string) {
 
   revalidatePath("/admin/batches");
   revalidateStorefront();
-}
-
-export async function updateInquiryStatus(
-  id: string,
-  status: InquiryStatus,
-  trackingNumber: string | null,
-) {
-  const supabase = await createClient();
-  const { error } = await supabase
-    .from("inquiries")
-    .update({ status, tracking_number: trackingNumber })
-    .eq("id", id);
-  if (error) throw error;
-
-  revalidatePath("/admin/inquiries");
-}
-
-export async function deleteInquiry(id: string) {
-  const supabase = await createClient();
-  const { error } = await supabase.from("inquiries").delete().eq("id", id);
-  if (error) throw error;
-
-  revalidatePath("/admin/inquiries");
 }
 
 export async function saveSection(

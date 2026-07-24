@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { VARIANT_TYPE_LABEL, Variant, VariantType } from "@/lib/types";
 
 const TYPE_ORDER: VariantType[] = ["new_stock", "used_stock", "preorder"];
@@ -12,12 +11,10 @@ function formatDate(date: string | null) {
 }
 
 export default function VariantPicker({
-  productId,
   productName,
   variants,
   lineUrl,
 }: {
-  productId: string;
   productName: string;
   variants: Variant[];
   lineUrl?: string;
@@ -44,26 +41,6 @@ export default function VariantPicker({
           }（${VARIANT_TYPE_LABEL[selected.variant_type]}）`,
         )}`
       : lineUrl;
-
-  function recordInquiry() {
-    if (!selected) return;
-    const supabase = createClient();
-    supabase
-      .from("inquiries")
-      .insert({
-        product_id: productId,
-        variant_id: selected.id,
-        product_name: productName,
-        variant_label: `${selected.size ?? "單一規格"} / ${
-          VARIANT_TYPE_LABEL[selected.variant_type]
-        }`,
-        price: selected.price,
-        order_type: selected.variant_type === "preorder" ? "preorder" : "stock",
-      })
-      .then(({ error }) => {
-        if (error) console.error("記錄詢問單失敗", error);
-      });
-  }
 
   return (
     <div className="flex flex-col gap-6 lg:flex-row">
@@ -182,7 +159,6 @@ export default function VariantPicker({
               href={inquiryHref}
               target="_blank"
               rel="noopener noreferrer"
-              onClick={recordInquiry}
               className="inline-flex h-12 items-center justify-center rounded-full bg-brand px-8 text-base font-medium text-brand-foreground transition-opacity hover:opacity-90"
             >
               立即購買

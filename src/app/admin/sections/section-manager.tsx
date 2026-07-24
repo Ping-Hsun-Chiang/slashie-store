@@ -108,7 +108,7 @@ export default function SectionManager({
         <button
           type="button"
           onClick={startNew}
-          className="self-end rounded-full bg-foreground px-5 py-2 text-sm font-medium text-background hover:bg-[#383838] dark:hover:bg-[#ccc]"
+          className="self-end rounded-full bg-brand px-5 py-2 text-sm font-medium text-brand-foreground hover:opacity-90"
         >
           + 新增分類
         </button>
@@ -171,7 +171,7 @@ export default function SectionManager({
               type="button"
               onClick={handleSave}
               disabled={isPending}
-              className="rounded-full bg-foreground px-5 py-2 text-sm font-medium text-background hover:bg-[#383838] disabled:opacity-50 dark:hover:bg-[#ccc]"
+              className="rounded-full bg-brand px-5 py-2 text-sm font-medium text-brand-foreground hover:opacity-90 disabled:opacity-50"
             >
               {isPending ? "儲存中…" : "儲存"}
             </button>

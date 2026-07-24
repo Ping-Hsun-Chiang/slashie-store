@@ -98,7 +98,7 @@ export default function VariantPicker({
       </div>
 
       <div className="flex-1">
-        <h1 className="text-2xl font-semibold">{productName}</h1>
+        <h1 className="font-serif text-2xl font-medium">{productName}</h1>
 
         {selected && (
           <p className="mt-2 text-xl font-semibold">
@@ -120,7 +120,7 @@ export default function VariantPicker({
                     disabled={item.status === "sold"}
                     className={`rounded-lg border px-3 py-2 text-sm transition-colors ${
                       selectedId === item.id
-                        ? "border-foreground bg-foreground text-background"
+                        ? "border-brand bg-brand text-brand-foreground"
                         : "border-black/[.12] hover:border-black/[.3] dark:border-white/[.2] dark:hover:border-white/[.4]"
                     } ${
                       item.status === "sold"
@@ -183,7 +183,7 @@ export default function VariantPicker({
               target="_blank"
               rel="noopener noreferrer"
               onClick={recordInquiry}
-              className="inline-flex h-12 items-center justify-center rounded-full bg-foreground px-8 text-base font-medium text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc]"
+              className="inline-flex h-12 items-center justify-center rounded-full bg-brand px-8 text-base font-medium text-brand-foreground transition-opacity hover:opacity-90"
             >
               立即購買
             </a>

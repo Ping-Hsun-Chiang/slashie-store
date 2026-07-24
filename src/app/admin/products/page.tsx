@@ -11,7 +11,7 @@ export default async function AdminProductsPage() {
         <h1 className="text-2xl font-semibold">商品管理</h1>
         <Link
           href="/admin/products/new"
-          className="rounded-full bg-foreground px-5 py-2 text-sm font-medium text-background hover:bg-[#383838] dark:hover:bg-[#ccc]"
+          className="rounded-full bg-brand px-5 py-2 text-sm font-medium text-brand-foreground hover:opacity-90"
         >
           + 新增商品
         </Link>

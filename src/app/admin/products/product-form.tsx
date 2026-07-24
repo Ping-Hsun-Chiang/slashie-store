@@ -448,7 +448,7 @@ export default function ProductForm({
           type="button"
           onClick={handleSubmit}
           disabled={isPending}
-          className="h-11 rounded-full bg-foreground px-8 text-sm font-medium text-background hover:bg-[#383838] disabled:opacity-50 dark:hover:bg-[#ccc]"
+          className="h-11 rounded-full bg-brand px-8 text-sm font-medium text-brand-foreground hover:opacity-90 disabled:opacity-50"
         >
           {isPending ? "儲存中…" : "儲存"}
         </button>

@@ -59,7 +59,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="h-11 rounded-full bg-foreground text-sm font-medium text-background transition-colors hover:bg-[#383838] disabled:opacity-50 dark:hover:bg-[#ccc]"
+          className="h-11 rounded-full bg-brand text-sm font-medium text-brand-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
         >
           {loading ? "登入中…" : "登入"}
         </button>

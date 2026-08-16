@@ -156,13 +156,37 @@ export default async function Home() {
         ))}
       </div>
 
-      <section className="mt-16 w-full max-w-xl border-t border-black/[.08] pt-8 text-sm text-zinc-600 dark:border-white/[.145] dark:text-zinc-400">
-        <h2 className="mb-4 font-serif text-lg font-medium text-zinc-900 dark:text-zinc-100">
-          注意事項
-        </h2>
-        <ul className="list-disc space-y-2 pl-5">
-          {NOTICES.map((notice) => (
-            <li key={notice}>{notice}</li>
+      <section className="mt-16 w-full max-w-xl text-sm text-zinc-600 dark:text-zinc-400">
+        <div className="mb-5 flex items-center gap-2">
+          <svg
+            aria-hidden
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.75"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="text-brand dark:text-white/70"
+          >
+            <circle cx="12" cy="12" r="9" />
+            <line x1="12" y1="8" x2="12" y2="8.01" />
+            <line x1="12" y1="11" x2="12" y2="16" />
+          </svg>
+          <h2 className="font-serif text-lg font-medium text-zinc-900 dark:text-zinc-100">
+            注意事項
+          </h2>
+        </div>
+        <div className="h-px w-full bg-gradient-to-r from-brand/25 via-brand/5 to-transparent dark:from-white/25 dark:via-white/5" />
+        <ul className="mt-6 space-y-3">
+          {NOTICES.map((notice, index) => (
+            <li key={notice} className="flex gap-3">
+              <span className="mt-0.5 shrink-0 font-serif text-xs font-semibold text-brand/50 dark:text-white/40">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <span className="leading-relaxed">{notice}</span>
+            </li>
           ))}
         </ul>
       </section>

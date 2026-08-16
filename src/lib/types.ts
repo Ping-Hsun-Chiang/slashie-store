@@ -7,6 +7,7 @@ export interface Variant {
   variant_type: VariantType;
   size: string | null;
   condition_note: string | null;
+  box_note: string | null;
   price: number;
   cost_price: number | null;
   quantity: number;
@@ -17,12 +18,6 @@ export interface Variant {
 
 export interface InventoryVariant extends Variant {
   products: { id: string; name: string; brand: string | null };
-}
-
-export interface ProductOption {
-  id: string;
-  name: string;
-  brand: string | null;
 }
 
 export interface Section {

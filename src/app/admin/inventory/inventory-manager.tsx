@@ -10,52 +10,39 @@ import {
 } from "@/app/admin/actions";
 import {
   InventoryVariant,
-  ProductOption,
   VARIANT_TYPE_LABEL,
-  VariantStatus,
   VariantType,
 } from "@/lib/types";
+import { uploadProductImage } from "@/lib/supabase/storage";
 
 const VARIANT_TYPES: Extract<VariantType, "new_stock" | "used_stock">[] = [
   "new_stock",
   "used_stock",
 ];
-const STATUS_LABEL: Record<VariantStatus, string> = {
-  available: "上架中",
-  hidden: "已入庫（未上架）",
-  sold: "已售出",
-};
 
 function emptyItem(): InventoryItemInput {
   return {
     variant_type: "new_stock",
     size: "",
+    condition_note: null,
+    box_note: null,
     cost_price: null,
-    price: 0,
     quantity: 1,
-    status: "hidden",
+    images: [],
   };
-}
-
-function marginLabel(price: number, cost: number | null) {
-  if (!cost) return "—";
-  const margin = ((price - cost) / cost) * 100;
-  return `${margin.toFixed(0)}%`;
 }
 
 export default function InventoryManager({
   initialItems,
-  products,
 }: {
   initialItems: InventoryVariant[];
-  products: ProductOption[];
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
   const [showNewForm, setShowNewForm] = useState(false);
-  const [newProductId, setNewProductId] = useState(products[0]?.id ?? "");
+  const [newProductName, setNewProductName] = useState("");
   const [newItem, setNewItem] = useState<InventoryItemInput>(emptyItem());
 
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -64,6 +51,7 @@ export default function InventoryManager({
   function startAdd() {
     setShowNewForm(true);
     setEditingId(null);
+    setNewProductName("");
     setNewItem(emptyItem());
     setError(null);
   }
@@ -75,10 +63,11 @@ export default function InventoryManager({
     setEditDraft({
       variant_type: item.variant_type as "new_stock" | "used_stock",
       size: item.size,
+      condition_note: item.condition_note,
+      box_note: item.box_note,
       cost_price: item.cost_price,
-      price: item.price,
       quantity: item.quantity,
-      status: item.status,
+      images: item.images,
     });
   }
 
@@ -90,13 +79,13 @@ export default function InventoryManager({
 
   function handleCreate() {
     setError(null);
-    if (!newProductId) {
-      setError("請選擇型號");
+    if (!newProductName.trim()) {
+      setError("請輸入型號");
       return;
     }
     startTransition(async () => {
       try {
-        await createInventoryItem(newProductId, newItem);
+        await createInventoryItem({ name: newProductName.trim() }, newItem);
         cancel();
         router.refresh();
       } catch {
@@ -145,18 +134,16 @@ export default function InventoryManager({
         <div className="flex flex-col gap-3 rounded-2xl border border-black/[.08] p-6 dark:border-white/[.145]">
           <label className="flex flex-col gap-1 text-sm">
             型號
-            <select
-              value={newProductId}
-              onChange={(e) => setNewProductId(e.target.value)}
+            <input
+              value={newProductName}
+              onChange={(e) => setNewProductName(e.target.value)}
+              placeholder="例如：New Balance 990v6 Grey"
               className="rounded-lg border border-black/[.12] px-3 py-2 dark:border-white/[.2] dark:bg-zinc-900"
-            >
-              {products.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.brand ? `${p.brand} — ${p.name}` : p.name}
-                </option>
-              ))}
-            </select>
+            />
           </label>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            每次入庫都會建立一筆新商品，就算型號名稱重複也沒關係；品牌與分類之後可以到「商品管理」補上。
+          </p>
           <ItemFields item={newItem} onChange={setNewItem} />
           <div className="flex justify-end gap-3">
             <button
@@ -188,13 +175,10 @@ export default function InventoryManager({
             <thead className="bg-zinc-100 text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
               <tr>
                 <th className="px-4 py-3 font-medium">型號</th>
-                <th className="px-4 py-3 font-medium">類型</th>
+                <th className="px-4 py-3 font-medium">鞋況</th>
+                <th className="px-4 py-3 font-medium">盒況配件</th>
                 <th className="px-4 py-3 font-medium">尺寸</th>
-                <th className="px-4 py-3 font-medium">數量</th>
                 <th className="px-4 py-3 font-medium">成本</th>
-                <th className="px-4 py-3 font-medium">售價</th>
-                <th className="px-4 py-3 font-medium">報酬率</th>
-                <th className="px-4 py-3 font-medium">狀態</th>
                 <th className="px-4 py-3 font-medium"></th>
               </tr>
             </thead>
@@ -215,7 +199,7 @@ export default function InventoryManager({
                       )}
                     </td>
                     {isEditing && editDraft ? (
-                      <td colSpan={7} className="px-4 py-3">
+                      <td colSpan={4} className="px-4 py-3">
                         <ItemFields item={editDraft} onChange={setEditDraft} inline />
                       </td>
                     ) : (
@@ -223,21 +207,12 @@ export default function InventoryManager({
                         <td className="px-4 py-3">
                           {VARIANT_TYPE_LABEL[item.variant_type]}
                         </td>
+                        <td className="px-4 py-3">{item.box_note ?? "—"}</td>
                         <td className="px-4 py-3">{item.size ?? "—"}</td>
-                        <td className="px-4 py-3">{item.quantity}</td>
                         <td className="px-4 py-3">
                           {item.cost_price
                             ? `NT$ ${item.cost_price.toLocaleString()}`
                             : "—"}
-                        </td>
-                        <td className="px-4 py-3">
-                          NT$ {item.price.toLocaleString()}
-                        </td>
-                        <td className="px-4 py-3">
-                          {marginLabel(item.price, item.cost_price)}
-                        </td>
-                        <td className="px-4 py-3">
-                          {STATUS_LABEL[item.status]}
                         </td>
                       </>
                     )}
@@ -291,96 +266,135 @@ export default function InventoryManager({
 function ItemFields({
   item,
   onChange,
-  inline,
 }: {
   item: InventoryItemInput;
   onChange: (item: InventoryItemInput) => void;
   inline?: boolean;
 }) {
+  const [uploading, setUploading] = useState(false);
+
+  async function handleImageUpload(files: FileList) {
+    setUploading(true);
+    try {
+      const urls = await Promise.all(
+        Array.from(files).map((file) => uploadProductImage(file)),
+      );
+      onChange({ ...item, images: [...item.images, ...urls] });
+    } catch {
+      // 上傳失敗時使用者可以重新選檔再試一次
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  function removeImage(url: string) {
+    onChange({ ...item, images: item.images.filter((u) => u !== url) });
+  }
+
   return (
-    <div
-      className={
-        inline
-          ? "grid grid-cols-2 gap-3 sm:grid-cols-4"
-          : "grid grid-cols-2 gap-3 sm:grid-cols-3"
-      }
-    >
-      <label className="flex flex-col gap-1 text-sm">
-        類型
-        <select
-          value={item.variant_type}
-          onChange={(e) =>
-            onChange({ ...item, variant_type: e.target.value as VariantType })
-          }
-          className="rounded-lg border border-black/[.12] px-3 py-2 dark:border-white/[.2] dark:bg-zinc-900"
-        >
-          {VARIANT_TYPES.map((t) => (
-            <option key={t} value={t}>
-              {VARIANT_TYPE_LABEL[t]}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label className="flex flex-col gap-1 text-sm">
-        尺寸
+    <div className="flex flex-col gap-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <label className="flex flex-col gap-1 text-sm">
+          鞋況
+          <select
+            value={item.variant_type}
+            onChange={(e) =>
+              onChange({ ...item, variant_type: e.target.value as VariantType })
+            }
+            className="rounded-lg border border-black/[.12] px-3 py-2 dark:border-white/[.2] dark:bg-zinc-900"
+          >
+            {VARIANT_TYPES.map((t) => (
+              <option key={t} value={t}>
+                {VARIANT_TYPE_LABEL[t]}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="flex flex-col gap-1 text-sm">
+          盒況配件
+          <input
+            value={item.box_note ?? ""}
+            onChange={(e) =>
+              onChange({ ...item, box_note: e.target.value || null })
+            }
+            placeholder="例如：全新原盒、缺盒、附備用鞋帶"
+            className="rounded-lg border border-black/[.12] px-3 py-2 dark:border-white/[.2] dark:bg-zinc-900"
+          />
+        </label>
+        <label className="flex flex-col gap-1 text-sm">
+          尺寸
+          <input
+            value={item.size ?? ""}
+            onChange={(e) => onChange({ ...item, size: e.target.value || null })}
+            className="rounded-lg border border-black/[.12] px-3 py-2 dark:border-white/[.2] dark:bg-zinc-900"
+          />
+        </label>
+        <label className="flex flex-col gap-1 text-sm">
+          成本
+          <input
+            type="number"
+            value={item.cost_price ?? ""}
+            onChange={(e) =>
+              onChange({
+                ...item,
+                cost_price: e.target.value ? Number(e.target.value) : null,
+              })
+            }
+            className="rounded-lg border border-black/[.12] px-3 py-2 dark:border-white/[.2] dark:bg-zinc-900"
+          />
+        </label>
+      </div>
+
+      {item.variant_type === "used_stock" && (
+        <label className="flex flex-col gap-1 text-sm">
+          使用狀況說明
+          <textarea
+            value={item.condition_note ?? ""}
+            onChange={(e) =>
+              onChange({ ...item, condition_note: e.target.value || null })
+            }
+            rows={2}
+            className="rounded-lg border border-black/[.12] px-3 py-2 dark:border-white/[.2] dark:bg-zinc-900"
+          />
+        </label>
+      )}
+
+      <div className="flex flex-col gap-2 text-sm">
+        實品照片
+        {item.images.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {item.images.map((url) => (
+              <div key={url} className="relative">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={url}
+                  alt=""
+                  className="h-20 w-20 rounded-lg object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeImage(url)}
+                  className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black text-xs text-white"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
         <input
-          value={item.size ?? ""}
-          onChange={(e) => onChange({ ...item, size: e.target.value || null })}
-          className="rounded-lg border border-black/[.12] px-3 py-2 dark:border-white/[.2] dark:bg-zinc-900"
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={(e) => {
+            if (e.target.files && e.target.files.length > 0) {
+              handleImageUpload(e.target.files);
+            }
+          }}
+          className="file:rounded-lg file:border file:border-black/20 file:bg-white file:px-3 file:py-1.5 file:text-sm file:font-medium dark:file:border-white/20 dark:file:bg-zinc-900 dark:file:text-zinc-100"
         />
-      </label>
-      <label className="flex flex-col gap-1 text-sm">
-        數量
-        <input
-          type="number"
-          min={1}
-          disabled={item.variant_type !== "new_stock"}
-          value={item.quantity}
-          onChange={(e) =>
-            onChange({ ...item, quantity: Number(e.target.value) })
-          }
-          className="rounded-lg border border-black/[.12] px-3 py-2 disabled:opacity-50 dark:border-white/[.2] dark:bg-zinc-900"
-        />
-      </label>
-      <label className="flex flex-col gap-1 text-sm">
-        成本
-        <input
-          type="number"
-          value={item.cost_price ?? ""}
-          onChange={(e) =>
-            onChange({
-              ...item,
-              cost_price: e.target.value ? Number(e.target.value) : null,
-            })
-          }
-          className="rounded-lg border border-black/[.12] px-3 py-2 dark:border-white/[.2] dark:bg-zinc-900"
-        />
-      </label>
-      <label className="flex flex-col gap-1 text-sm">
-        售價
-        <input
-          type="number"
-          value={item.price}
-          onChange={(e) => onChange({ ...item, price: Number(e.target.value) })}
-          className="rounded-lg border border-black/[.12] px-3 py-2 dark:border-white/[.2] dark:bg-zinc-900"
-        />
-      </label>
-      <label className="flex flex-col gap-1 text-sm">
-        狀態
-        <select
-          value={item.status}
-          onChange={(e) =>
-            onChange({ ...item, status: e.target.value as VariantStatus })
-          }
-          className="rounded-lg border border-black/[.12] px-3 py-2 dark:border-white/[.2] dark:bg-zinc-900"
-        >
-          {(Object.keys(STATUS_LABEL) as VariantStatus[]).map((s) => (
-            <option key={s} value={s}>
-              {STATUS_LABEL[s]}
-            </option>
-          ))}
-        </select>
-      </label>
+        {uploading && <p className="text-xs text-zinc-500">上傳中…</p>}
+      </div>
     </div>
   );
 }

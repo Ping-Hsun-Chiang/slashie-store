@@ -31,16 +31,16 @@ export default async function AdminLayout({
               分類管理
             </Link>
             <Link
-              href="/admin/products"
-              className="text-zinc-600 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-50"
-            >
-              商品管理
-            </Link>
-            <Link
               href="/admin/inventory"
               className="text-zinc-600 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-50"
             >
               庫存管理
+            </Link>
+            <Link
+              href="/admin/products"
+              className="text-zinc-600 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-50"
+            >
+              商品管理
             </Link>
           </nav>
           <LogoutButton />

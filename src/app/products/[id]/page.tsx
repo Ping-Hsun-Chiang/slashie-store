@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Product } from "@/lib/types";
+import { productGalleryImages } from "@/lib/product-image";
 import VariantPicker from "./variant-picker";
 
 async function getProduct(id: string): Promise<Product | null> {
@@ -52,6 +53,7 @@ export default async function ProductDetailPage({
       <VariantPicker
         productName={product.name}
         variants={product.variants ?? []}
+        fallbackImages={productGalleryImages(product)}
         lineUrl={process.env.NEXT_PUBLIC_LINE_URL}
       />
       {product.description && (

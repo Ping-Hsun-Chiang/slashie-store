@@ -8,10 +8,12 @@ const TYPE_ORDER: VariantType[] = ["new_stock", "used_stock", "preorder"];
 export default function VariantPicker({
   productName,
   variants,
+  fallbackImages,
   lineUrl,
 }: {
   productName: string;
   variants: Variant[];
+  fallbackImages?: string[];
   lineUrl?: string;
 }) {
   const available = variants.filter((v) => v.status !== "hidden");
@@ -20,6 +22,10 @@ export default function VariantPicker({
   );
 
   const selected = available.find((v) => v.id === selectedId) ?? null;
+  const displayImages =
+    selected && selected.images.length > 0
+      ? selected.images
+      : (fallbackImages ?? []);
 
   const grouped = TYPE_ORDER.map((type) => ({
     type,
@@ -41,10 +47,10 @@ export default function VariantPicker({
     <div className="flex flex-col gap-6 lg:flex-row">
       <div className="flex-1">
         <div className="aspect-square w-full overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-900">
-          {selected && selected.images.length > 0 ? (
+          {displayImages.length > 0 ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={selected.images[0]}
+              src={displayImages[0]}
               alt={productName}
               className="h-full w-full object-cover"
             />
@@ -54,9 +60,9 @@ export default function VariantPicker({
             </div>
           )}
         </div>
-        {selected && selected.images.length > 1 && (
+        {displayImages.length > 1 && (
           <div className="mt-3 grid grid-cols-4 gap-2">
-            {selected.images.slice(1).map((src) => (
+            {displayImages.slice(1).map((src) => (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 key={src}

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Product, VARIANT_TYPE_LABEL, VariantType } from "@/lib/types";
+import { productCoverImage } from "@/lib/product-image";
 
 function priceRangeLabel(product: Product) {
   const prices = (product.variants ?? [])
@@ -37,10 +38,10 @@ export default function ProductGrid({ products }: { products: Product[] }) {
           className="group overflow-hidden rounded-2xl border border-black/[.08] bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-xl dark:border-white/[.145] dark:bg-zinc-950"
         >
           <div className="aspect-square w-full bg-zinc-100 dark:bg-zinc-900">
-            {product.cover_image_url ? (
+            {productCoverImage(product) ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={product.cover_image_url}
+                src={productCoverImage(product) ?? undefined}
                 alt={product.name}
                 className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
               />

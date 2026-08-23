@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { InventoryVariant, Product, Section } from "@/lib/types";
+import { InventoryVariant, Product, Sale, Section } from "@/lib/types";
 
 export function isSupabaseConfigured() {
   return Boolean(
@@ -98,4 +98,15 @@ export async function getInventoryVariants(): Promise<InventoryVariant[]> {
 
   if (error) throw error;
   return (data ?? []) as InventoryVariant[];
+}
+
+export async function getAllSales(): Promise<Sale[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("sales")
+    .select("*, sale_items(*, variants(*, products(id, name, brand)))")
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  return (data ?? []) as Sale[];
 }

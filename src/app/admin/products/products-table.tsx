@@ -110,9 +110,14 @@ function ProductRow({
   }
 
   const variant = product.variants?.[0];
+  const isSold = variant?.status === "sold";
 
   return (
-    <tr className="border-t border-black/[.08] align-middle dark:border-white/[.145]">
+    <tr
+      className={`border-t border-black/[.08] align-middle dark:border-white/[.145] ${
+        isSold ? "text-zinc-400 line-through dark:text-zinc-600" : ""
+      }`}
+    >
       <td className="px-4 py-2">
         <p className="font-medium">{product.name}</p>
         {product.brand && (
@@ -126,7 +131,7 @@ function ProductRow({
       </td>
       <td className="px-4 py-2">{variant?.box_note ?? "—"}</td>
       <td className="px-4 py-2">{variant?.size ?? "—"}</td>
-      <td className="px-4 py-2">
+      <td className="px-4 py-2 no-underline">
         <SectionsDropdown
           sections={sections}
           selectedIds={sectionIds}
@@ -134,7 +139,7 @@ function ProductRow({
           disabled={isPending}
         />
       </td>
-      <td className="px-4 py-2">
+      <td className="px-4 py-2 no-underline">
         <input
           type="checkbox"
           checked={isActive}

@@ -42,6 +42,12 @@ export default async function AdminLayout({
             >
               商品管理
             </Link>
+            <Link
+              href="/admin/sales"
+              className="text-zinc-600 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-50"
+            >
+              銷售管理
+            </Link>
           </nav>
           <LogoutButton />
         </div>

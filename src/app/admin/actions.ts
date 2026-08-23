@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { VariantStatus, VariantType } from "@/lib/types";
+import { ShippingChannel, VariantStatus, VariantType } from "@/lib/types";
 
 export interface ProductInput {
   name: string;
@@ -256,4 +256,108 @@ export async function deleteInventoryItem(variantId: string) {
   revalidatePath("/admin/inventory");
   revalidatePath("/admin/products");
   revalidateStorefront();
+}
+
+export interface SaleInput {
+  amount: number;
+  buyerName: string;
+  shippingCode: string | null;
+  shippingChannel: ShippingChannel;
+}
+
+function revalidateSales() {
+  revalidatePath("/admin/sales");
+  revalidatePath("/admin/inventory");
+  revalidatePath("/admin/products");
+  revalidateStorefront();
+}
+
+export async function createSale(variantIds: string[], sale: SaleInput) {
+  if (variantIds.length === 0) throw new Error("請選擇至少一筆庫存品項");
+
+  const supabase = await createClient();
+
+  const { data: newSale, error: saleError } = await supabase
+    .from("sales")
+    .insert({
+      amount: sale.amount,
+      buyer_name: sale.buyerName,
+      shipping_code: sale.shippingCode,
+      shipping_channel: sale.shippingChannel,
+    })
+    .select("id")
+    .single();
+  if (saleError) throw saleError;
+
+  const { error: itemsError } = await supabase.from("sale_items").insert(
+    variantIds.map((variantId) => ({
+      sale_id: newSale.id as string,
+      variant_id: variantId,
+    })),
+  );
+  if (itemsError) throw itemsError;
+
+  const { error: statusError } = await supabase
+    .from("variants")
+    .update({ status: "sold" satisfies VariantStatus })
+    .in("id", variantIds);
+  if (statusError) throw statusError;
+
+  await setProductsActiveForVariants(supabase, variantIds, false);
+
+  revalidateSales();
+}
+
+async function setProductsActiveForVariants(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  variantIds: string[],
+  isActive: boolean,
+) {
+  if (variantIds.length === 0) return;
+
+  const { data: variantRows, error: fetchError } = await supabase
+    .from("variants")
+    .select("product_id")
+    .in("id", variantIds);
+  if (fetchError) throw fetchError;
+
+  const productIds = [
+    ...new Set((variantRows ?? []).map((v) => v.product_id as string)),
+  ];
+  if (productIds.length === 0) return;
+
+  const { error: productError } = await supabase
+    .from("products")
+    .update({ is_active: isActive })
+    .in("id", productIds);
+  if (productError) throw productError;
+}
+
+export async function deleteSale(saleId: string) {
+  const supabase = await createClient();
+
+  const { data: items, error: itemsError } = await supabase
+    .from("sale_items")
+    .select("variant_id")
+    .eq("sale_id", saleId);
+  if (itemsError) throw itemsError;
+
+  const { error: deleteError } = await supabase
+    .from("sales")
+    .delete()
+    .eq("id", saleId);
+  if (deleteError) throw deleteError;
+
+  const variantIds = (items ?? []).map((item) => item.variant_id as string);
+  if (variantIds.length > 0) {
+    const { error: statusError } = await supabase
+      .from("variants")
+      .update({ status: "hidden" satisfies VariantStatus })
+      .in("id", variantIds);
+    if (statusError) throw statusError;
+
+    await setProductsActiveForVariants(supabase, variantIds, true);
+  }
+
+  revalidateSales();
 }

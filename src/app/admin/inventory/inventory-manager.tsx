@@ -185,10 +185,13 @@ export default function InventoryManager({
             <tbody>
               {initialItems.map((item) => {
                 const isEditing = editingId === item.id;
+                const isSold = item.status === "sold";
                 return (
                   <tr
                     key={item.id}
-                    className="border-t border-black/[.08] align-top dark:border-white/[.145]"
+                    className={`border-t border-black/[.08] align-top dark:border-white/[.145] ${
+                      isSold ? "text-zinc-400 line-through dark:text-zinc-600" : ""
+                    }`}
                   >
                     <td className="px-4 py-3">
                       <p className="font-medium">{item.products.name}</p>
@@ -216,7 +219,7 @@ export default function InventoryManager({
                         </td>
                       </>
                     )}
-                    <td className="px-4 py-3 text-right">
+                    <td className="px-4 py-3 text-right no-underline">
                       {isEditing ? (
                         <div className="flex justify-end gap-3">
                           <button
@@ -235,12 +238,14 @@ export default function InventoryManager({
                         </div>
                       ) : (
                         <div className="flex justify-end gap-4">
-                          <button
-                            onClick={() => startEdit(item)}
-                            className="text-sm hover:underline"
-                          >
-                            編輯
-                          </button>
+                          {!isSold && (
+                            <button
+                              onClick={() => startEdit(item)}
+                              className="text-sm hover:underline"
+                            >
+                              編輯
+                            </button>
+                          )}
                           <button
                             onClick={() =>
                               handleDelete(item.id, item.products.name)

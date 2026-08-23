@@ -30,13 +30,14 @@ export default function VariantPicker({
   const [activeIndex, setActiveIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
-  useEffect(() => {
+  // Reset the active photo whenever the selected variant changes, without
+  // an effect (see https://react.dev/learn/you-might-not-need-an-effect).
+  const [trackedSelectedId, setTrackedSelectedId] = useState(selectedId);
+  if (selectedId !== trackedSelectedId) {
+    setTrackedSelectedId(selectedId);
     setActiveIndex(0);
-  }, [selectedId]);
-
-  useEffect(() => {
-    if (activeIndex >= displayImages.length) setActiveIndex(0);
-  }, [displayImages.length, activeIndex]);
+  }
+  const safeIndex = activeIndex < displayImages.length ? activeIndex : 0;
 
   useEffect(() => {
     if (!lightboxOpen) return;
@@ -83,7 +84,7 @@ export default function VariantPicker({
           {displayImages.length > 0 ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={displayImages[activeIndex]}
+              src={displayImages[safeIndex]}
               alt={productName}
               className="h-full w-full object-cover"
             />
@@ -101,7 +102,7 @@ export default function VariantPicker({
                 type="button"
                 onClick={() => setActiveIndex(i)}
                 className={`aspect-square overflow-hidden rounded-lg border-2 transition-colors ${
-                  i === activeIndex
+                  i === safeIndex
                     ? "border-brand"
                     : "border-transparent hover:border-black/20 dark:hover:border-white/30"
                 }`}
@@ -231,7 +232,7 @@ export default function VariantPicker({
 
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={displayImages[activeIndex]}
+            src={displayImages[safeIndex]}
             alt={productName}
             className="max-h-full max-w-full object-contain"
             onClick={(e) => e.stopPropagation()}
@@ -239,7 +240,7 @@ export default function VariantPicker({
 
           {displayImages.length > 1 && (
             <p className="absolute bottom-4 left-1/2 -translate-x-1/2 text-sm text-white/70">
-              {activeIndex + 1} / {displayImages.length}
+              {safeIndex + 1} / {displayImages.length}
             </p>
           )}
         </div>

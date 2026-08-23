@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { VARIANT_TYPE_LABEL, Variant, VariantType } from "@/lib/types";
 
 const TYPE_ORDER: VariantType[] = ["new_stock", "used_stock", "preorder"];
@@ -27,6 +27,34 @@ export default function VariantPicker({
       ? selected.images
       : (fallbackImages ?? []);
 
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [selectedId]);
+
+  useEffect(() => {
+    if (activeIndex >= displayImages.length) setActiveIndex(0);
+  }, [displayImages.length, activeIndex]);
+
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setLightboxOpen(false);
+      if (e.key === "ArrowRight") {
+        setActiveIndex((i) => (i + 1) % displayImages.length);
+      }
+      if (e.key === "ArrowLeft") {
+        setActiveIndex(
+          (i) => (i - 1 + displayImages.length) % displayImages.length,
+        );
+      }
+    }
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [lightboxOpen, displayImages.length]);
+
   const grouped = TYPE_ORDER.map((type) => ({
     type,
     items: available
@@ -46,11 +74,16 @@ export default function VariantPicker({
   return (
     <div className="flex flex-col gap-6 lg:flex-row">
       <div className="flex-1">
-        <div className="aspect-square w-full overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-900">
+        <div
+          className={`aspect-square w-full overflow-hidden rounded-2xl bg-zinc-100 dark:bg-zinc-900 ${
+            displayImages.length > 0 ? "cursor-zoom-in" : ""
+          }`}
+          onClick={() => displayImages.length > 0 && setLightboxOpen(true)}
+        >
           {displayImages.length > 0 ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={displayImages[0]}
+              src={displayImages[activeIndex]}
               alt={productName}
               className="h-full w-full object-cover"
             />
@@ -62,14 +95,24 @@ export default function VariantPicker({
         </div>
         {displayImages.length > 1 && (
           <div className="mt-3 grid grid-cols-4 gap-2">
-            {displayImages.slice(1).map((src) => (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+            {displayImages.map((src, i) => (
+              <button
                 key={src}
-                src={src}
-                alt=""
-                className="aspect-square rounded-lg object-cover"
-              />
+                type="button"
+                onClick={() => setActiveIndex(i)}
+                className={`aspect-square overflow-hidden rounded-lg border-2 transition-colors ${
+                  i === activeIndex
+                    ? "border-brand"
+                    : "border-transparent hover:border-black/20 dark:hover:border-white/30"
+                }`}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={src}
+                  alt=""
+                  className="h-full w-full object-cover"
+                />
+              </button>
             ))}
           </div>
         )}
@@ -142,6 +185,65 @@ export default function VariantPicker({
           </div>
         )}
       </div>
+
+      {lightboxOpen && displayImages.length > 0 && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-6"
+          onClick={() => setLightboxOpen(false)}
+        >
+          <button
+            type="button"
+            onClick={() => setLightboxOpen(false)}
+            className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-xl text-white hover:bg-white/20"
+            aria-label="關閉"
+          >
+            ×
+          </button>
+
+          {displayImages.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveIndex(
+                    (i) => (i - 1 + displayImages.length) % displayImages.length,
+                  );
+                }}
+                className="absolute left-4 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-xl text-white hover:bg-white/20"
+                aria-label="上一張"
+              >
+                ‹
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveIndex((i) => (i + 1) % displayImages.length);
+                }}
+                className="absolute right-4 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-xl text-white hover:bg-white/20"
+                aria-label="下一張"
+              >
+                ›
+              </button>
+            </>
+          )}
+
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={displayImages[activeIndex]}
+            alt={productName}
+            className="max-h-full max-w-full object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+
+          {displayImages.length > 1 && (
+            <p className="absolute bottom-4 left-1/2 -translate-x-1/2 text-sm text-white/70">
+              {activeIndex + 1} / {displayImages.length}
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
